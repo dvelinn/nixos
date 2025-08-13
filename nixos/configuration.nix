@@ -1,147 +1,5 @@
 { config, lib, pkgs, ... }:
 
-# ----------------------------------------------------------------------------
-# Helper scripts & external inputs (let/in)
-# ----------------------------------------------------------------------------
-let
-  # ML4W dotfile linker
-  linkScript = pkgs.writeShellScriptBin "apply-ml4w" ''
-    set -euo pipefail
-    SRC="$HOME/.mydotfiles/com.ml4w.dotfiles.stable"
-    HOME_DIR="$HOME"
-    CFG_DIR="''${XDG_CONFIG_HOME:-$HOME/.config}"
-    mkdir -p "$CFG_DIR"
-
-    # Top-level dotfiles into $HOME
-    for f in .bashrc .gtkrc-2.0 .Xresources .zshrc; do
-      [ -e "$SRC/$f" ] && ln -sfn "$SRC/$f" "$HOME_DIR/$f"
-    done
-
-    # Everything under .config/ into $XDG_CONFIG_HOME
-    if [ -d "$SRC/.config" ]; then
-      shopt -s nullglob dotglob
-      for item in "$SRC/.config"/*; do
-        name="$(basename "$item")"
-        ln -sfn "$item" "$CFG_DIR/$name"
-      done
-    fi
-
-    echo "ML4W dotfiles applied for $HOME_DIR"
-  '';
-
-  # Flatpak export helper (excludes ML4W apps)
-  flatpaksExport = pkgs.writeShellScriptBin "flatpaks-export" ''
-    set -euo pipefail
-    out="''${1:-flatpaks.csv}"
-    tmp="$(${pkgs.coreutils}/bin/mktemp)"
-    ${pkgs.flatpak}/bin/flatpak list --app --columns=application,origin,installation > "$tmp"
-    ${pkgs.gnugrep}/bin/grep -v -E '^(com\.ml4w\.(welcome|settings|sidebar|calendar|hyprlandsettings))\s' "$tmp" > "$out"
-    ${pkgs.coreutils}/bin/rm -f "$tmp"
-    echo "Wrote Flatpak list to: $out"
-  '';
-
-  # Flatpak restore helper (reads CSV and installs system/user scopes)
-  flatpaksRestore = pkgs.writeShellScriptBin "flatpaks-restore" ''
-    set -euo pipefail
-    file="''${1:-flatpaks.csv}"
-    if [ ! -f "$file" ]; then
-      echo "Usage: flatpaks-restore <csv>" >&2
-      exit 1
-    fi
-    FLATPAK=${pkgs.flatpak}/bin/flatpak
-    AWK=${pkgs.gawk}/bin/awk
-
-    # Ensure flathub exists in both scopes
-    $FLATPAK remote-add --if-not-exists --user   flathub https://dl.flathub.org/repo/flathub.flatpakrepo || true
-    $FLATPAK remote-add --if-not-exists --system flathub https://dl.flathub.org/repo/flathub.flatpakrepo || true
-
-    # Read csv, skip ML4W apps
-    while IFS=$'\t' read -r app remote scope; do
-      [ -n "''${app:-}" ] || continue
-      case "$app" in
-        com.ml4w.welcome|com.ml4w.settings|com.ml4w.sidebar|com.ml4w.calendar|com.ml4w.hyprlandsettings) continue ;;
-      esac
-      if [ "''${scope:-user}" = "system" ]; then scopeFlag="--system"; else scopeFlag="--user"; fi
-      remote="''${remote:-flathub}"
-      echo "Installing: $app from $remote ($scopeFlag)"
-      $FLATPAK install -y --noninteractive --or-update $scopeFlag "$remote" "$app" || true
-    done < <( $AWK -F'\t' 'NF>=1 {print $0}' "$file" )
-
-    echo "Done restoring Flatpaks."
-  '';
-
-  FLAKE_DIR = "$HOME/.mydotfiles/nixos";  # adjust if you move your repo
-  HOST      = "voidgazer";                # flake host
-
-  # Stage with local commit, rebuild switch
-  wipRebuild = pkgs.writeShellScriptBin "wip-rebuild" ''
-    #!/usr/bin/env bash
-    set -euo pipefail
-    FLAKE_DIR="$HOME/.mydotfiles/nixos"
-    HOST="voidgazer"
-    cd "$FLAKE_DIR"
-    git add -A
-    if git rev-parse --verify HEAD >/dev/null 2>&1; then
-      git commit --amend --no-edit
-    else
-      git commit -m "WIP"
-    fi
-    exec sudo nixos-rebuild switch --flake "$FLAKE_DIR#$HOST"
-  '';
-
-  # Stage with local commit, rebuild test
-  wipTest = pkgs.writeShellScriptBin "wip-test" ''
-    #!/usr/bin/env bash
-    set -euo pipefail
-    FLAKE_DIR="$HOME/.mydotfiles/nixos"
-    HOST="voidgazer"
-    cd "$FLAKE_DIR"
-    git add -A
-    if git rev-parse --verify HEAD >/dev/null 2>&1; then
-      git commit --amend --no-edit
-    else
-      git commit -m "WIP"
-    fi
-    exec sudo nixos-rebuild test --flake "$FLAKE_DIR#$HOST"
-  '';
-
-  # flake update, add new .lock, local commit, rebuild switch
-  wipUpdate = pkgs.writeShellScriptBin "wip-update" ''
-    #!/usr/bin/env bash
-    set -euo pipefail
-    FLAKE_DIR="$HOME/.mydotfiles/nixos"
-    HOST="voidgazer"
-    cd "$FLAKE_DIR"
-    nix flake update
-    git add flake.lock flake.nix || true
-    if git rev-parse --verify HEAD >/dev/null 2>&1; then
-      git commit --amend --no-edit
-    else
-      git commit -m "WIP"
-    fi
-    exec sudo nixos-rebuild switch --flake "$FLAKE_DIR#$HOST"
-  '';
-
-  # Actually push all WIP changes with a message
-  checkpoint = pkgs.writeShellScriptBin "checkpoint" ''
-    #!/usr/bin/env bash
-    set -euo pipefail
-    FLAKE_DIR="$HOME/.mydotfiles/nixos"
-    cd "$FLAKE_DIR"
-    msg="$*"
-    if [ -z "$msg" ]; then msg="Checkpoint"; fi
-    git add -A
-    if git rev-parse --verify HEAD >/dev/null 2>&1; then
-      git commit --amend -m "$msg"
-    else
-      git commit -m "$msg"
-    fi
-    git push
-    echo "Pushed: $msg"
-  '';
-
-in
-
 {
   # ----------------------------------------------------------------------------
   # Imports & host identity
@@ -149,11 +7,22 @@ in
   imports = [ ./hardware-configuration.nix ];
   networking.hostName = "voidgazer";
 
-  # Bash aliases for QoL and taming git with flakes
+  # Bash aliases for QoL
   environment.shellAliases = {
     rebuild-update = "nix flake update ~/.mydotfiles/nixos && sudo nixos-rebuild switch --flake ~/.mydotfiles/nixos#voidgazer";
     rebuild  = "sudo nixos-rebuild switch --flake ~/.mydotfiles/nixos#voidgazer";
   };
+
+  # git/rebuild bash scripts
+  programs.devHelpers = {
+    enable = true;
+    flakeDir = "/home/polygon/.mydotfiles/nixos";
+    host     = "voidgazer";
+    branch   = "main";
+  };
+
+  # ML4W setup and flatpak export/restore bash scripts
+  programs.ml4w = { enable = true; };
 
   # ----------------------------------------------------------------------------
   # Boot & kernel
@@ -161,7 +30,7 @@ in
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;  # use latest kernel
-  boot.loader.systemd-boot.configurationLimit = 3;
+  boot.loader.systemd-boot.configurationLimit = 5;
 
   # ----------------------------------------------------------------------------
   # Locale, time, networking
@@ -203,23 +72,8 @@ in
 
   # X11 display server + Gnome
   services.xserver.enable = true;
+  services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
-
-  # Setup sddm theme
-  environment.etc."sddm/themes/sugar-candy".source = ../assets/sugar-candy;
-
-  # Enable sddm
-  services.displayManager.sddm = {
-    enable = true;
-    wayland.enable = false;        # crashes on wayland
-    package = pkgs.libsForQt5.sddm;
-      settings = {
-        Theme = {
-          ThemeDir = "/etc/sddm/themes";
-          Current  = "sugar-candy";
-        };
-      };
-    };
 
   # Hyprland compositor
   programs.hyprland = {
@@ -277,7 +131,6 @@ in
   # 1Password (GUI) from unstable; allow browser integration
   programs._1password-gui = {
     enable = true;
-    # package = pkgs-unstable._1password-gui;
     package = pkgs._1password-gui;
     polkitPolicyOwners = [ "polygon" ];
   };
@@ -353,14 +206,6 @@ in
   # Packages
   # ----------------------------------------------------------------------------
   environment.systemPackages = with pkgs; [
-    # Personal helpers
-    linkScript              # apply-ml4w
-    flatpaksExport     # export Flatpak list
-    flatpaksRestore   # restore Flatpaks from CSV
-    wipRebuild           # stage → single local WIP commit → switch
-    wipTest                  # stage → single local WIP commit → test
-    wipUpdate          # flake update → record lock in WIP → switch
-    checkpoint          # replace WIP with a real message → push
 
     # Apps
     mullvad-vpn
@@ -373,7 +218,6 @@ in
     freetube
     libreoffice-fresh
     gnome-calculator
-    qt5.qtgraphicaleffects
 
     # == ML4W DEPS ==
     wget unzip gum rsync git figlet xdg-user-dirs

@@ -34,6 +34,8 @@
 
         # Load config
         ./configuration.nix
+        ./modules/dev/helpers.nix
+        ./modules/dev/ml4w.nix
       ];
     };
   };
