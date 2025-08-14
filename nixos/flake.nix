@@ -15,26 +15,27 @@
   in {
     nixosConfigurations.voidgazer = nixpkgs.lib.nixosSystem {
       inherit system;
+      specialArgs = { inherit self; };
 
       modules = [
-        # Use 1Password from unstable
+        # Overlay(s)
         ({ ... }: {
           nixpkgs.overlays = [
-            # Use 1Password from unstable
+            # 1Password from unstable
             (final: prev: {
               _1password-gui = pkgsUnstable._1password-gui;
             })
 
-            # Zen flake
+            # Zen Browser from flake
             (final: prev: {
               zen-browser = zen.packages.${system}.default;
             })
           ];
         })
 
-        # Load config
+        # Your system config + modules
         ./configuration.nix
-        ./modules/dev/helpers.nix
+        ./modules/dev/git-scripts.nix
         ./modules/dev/ml4w.nix
       ];
     };

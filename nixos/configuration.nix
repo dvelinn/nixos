@@ -13,16 +13,18 @@
     rebuild  = "sudo nixos-rebuild switch --flake ~/.mydotfiles/nixos#voidgazer";
   };
 
-  # git/rebuild bash scripts
-  programs.devHelpers = {
-    enable = true;
-    flakeDir = "/home/polygon/.mydotfiles/nixos";
-    host     = "voidgazer";
-    branch   = "main";
+  # Install custom bash scripts
+  programs.ml4wScripts.enable = true;
+  programs.devScripts = {
+  enable = true;
+  scripts = {
+    "wip-rebuild" = "/scripts/git/wip-rebuild.sh";
+    "wip-test"    = "/scripts/git/wip-test.sh";
+    "wip-update"  = "/scripts/git/wip-update.sh";
+    "git-sync"    = "/scripts/git/git-sync.sh";
+    };
   };
 
-  # ML4W setup and flatpak export/restore bash scripts
-  programs.ml4w = { enable = true; };
 
   # ----------------------------------------------------------------------------
   # Boot & kernel
