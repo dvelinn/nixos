@@ -33,10 +33,11 @@
           ];
         })
 
-        # Your system config + modules
+        # System config + modules
         ./configuration.nix
         ./modules/dev/git-scripts.nix
         ./modules/dev/ml4w.nix
+        ./modules/perf/balanced.nix
       ];
     };
   };

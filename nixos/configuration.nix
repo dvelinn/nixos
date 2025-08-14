@@ -9,6 +9,7 @@
 
   # Bash aliases for QoL
   environment.shellAliases = {
+  update-flake = "nix flake update --flake ~/.mydotfiles/nixos";
   rebuild  = "sudo nixos-rebuild switch --flake ~/.mydotfiles/nixos#voidgazer";
   };
 
@@ -30,8 +31,10 @@
   # ----------------------------------------------------------------------------
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelPackages = pkgs.linuxPackages_latest;  # use latest kernel
+  # boot.kernelPackages = pkgs.linuxPackages_latest;  # defualt nixos kernel
   boot.loader.systemd-boot.configurationLimit = 5;
+  programs.perfBalanced.enable = true;
+  programs.perfBalanced.kernelFlavor = "zen";
 
   # ----------------------------------------------------------------------------
   # Locale, time, networking
