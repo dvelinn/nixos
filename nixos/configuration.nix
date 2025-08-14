@@ -222,6 +222,7 @@
     freetube
     libreoffice-fresh
     gnome-calculator
+    plex-desktop
 
     # == ML4W DEPS ==
     wget unzip gum rsync git figlet xdg-user-dirs
