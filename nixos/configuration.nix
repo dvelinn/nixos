@@ -161,6 +161,33 @@
   services.flatpak.enable = true;
   services.mullvad-vpn.enable = true;
 
+  # Basic maintenance
+  # Automatically install system updates daily
+  system.autoUpgrade = {
+    enable = true;
+    allowReboot = false;
+    dates = "07:00"; # UTC = 3am EST
+  };
+  # Make sure the update log directory exists and is 0755
+  systemd.tmpfiles.rules = [
+  "d /var/log/nixos-updates 0755 root root -"
+  ];
+  # Create a log of what was updated
+  programs.updateLog = {
+  enable = true;
+  script = "/home/polygon/.mydotfiles/scripts/auto-update/update-log.sh";
+  schedule = "07:10";
+  tieToAutoUpgrade = true;
+};
+
+
+  # Run garbage collection on a weekly basis to avoid filling up disk
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+
   # One-shot service to add ML4W repo and install ML4W Flatpaks
   systemd.services.ml4w-flatpaks = {
     description = "Install/Update ML4W Flatpaks";
