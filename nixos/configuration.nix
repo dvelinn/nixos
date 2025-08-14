@@ -9,8 +9,7 @@
 
   # Bash aliases for QoL
   environment.shellAliases = {
-    rebuild-update = "nix flake update ~/.mydotfiles/nixos && sudo nixos-rebuild switch --flake ~/.mydotfiles/nixos#voidgazer";
-    rebuild  = "sudo nixos-rebuild switch --flake ~/.mydotfiles/nixos#voidgazer";
+  rebuild  = "sudo nixos-rebuild switch --flake ~/.mydotfiles/nixos#voidgazer";
   };
 
   # Install custom bash scripts
