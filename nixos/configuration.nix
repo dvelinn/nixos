@@ -156,24 +156,40 @@
   services.flatpak.enable = true;
   services.mullvad-vpn.enable = true;
 
+  # ----------------------------------------------------------------------------
   # Basic maintenance
-  # Automatically install system updates daily
+  # ----------------------------------------------------------------------------
+  # Update lock file
+  services.lockfileUpdater = {
+    enable = true;
+    user = "polygon";
+    repoPath = "/home/polygon/.mydotfiles/nixos";
+    onCalendar = "*-*-* 02:50:00 America/New_York"; # tweak if you like
+  };
+
+  # Build system
   system.autoUpgrade = {
     enable = true;
+    flake = "/home/polygon/.mydotfiles/nixos#voidgazer";
     allowReboot = false;
-    dates = "07:00"; # UTC = 3am EST
+    operation = "switch";
+    persistent = true;
+    dates = "*-*-* 03:00:00 America/New_York";
   };
+
   # Make sure the update log directory exists and is 0755
   systemd.tmpfiles.rules = [
-  "d /var/log/nixos-updates 0755 root root -"
+    "d /var/log/nixos-updates 0755 root root -"
   ];
+
   # Create a log of what was updated
   programs.updateLog = {
-  enable = true;
-  script = "/home/polygon/.mydotfiles/scripts/auto-update/update-log.sh";
-  schedule = "07:10";
-  tieToAutoUpgrade = true;
+    enable = true;
+    script = "/home/polygon/.mydotfiles/scripts/auto-update/update-log.sh";
+    schedule = "*-*-* 03:10:00 America/New_York";
+    tieToAutoUpgrade = true;
   };
+
   # Run garbage collection on a weekly basis to avoid filling up disk
   nix.gc = {
     automatic = true;

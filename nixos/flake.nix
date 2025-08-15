@@ -39,6 +39,7 @@
         ./modules/dev/helpers.nix
         ./modules/perf/balanced.nix
         ./modules/maint/update-log.nix
+        ./modules/maint/lockfile-updater.nix
         ./modules/ml4w/flatpaks.nix
       ];
     };
