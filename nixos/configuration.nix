@@ -156,6 +156,11 @@
   services.flatpak.enable = true;
   services.mullvad-vpn.enable = true;
   systemd.services.ananicy.serviceConfig.Delegate = true;
+  services.fstrim.enable = true;   # weekly by default
+  services.journald.extraConfig = ''
+  SystemMaxUse=512M
+  RuntimeMaxUse=256M
+'';
 
   # Enable Ananicy with CachyOS ruleset
   services.ananicy = {
