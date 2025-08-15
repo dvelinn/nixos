@@ -36,9 +36,10 @@
         # System config + modules
         ./configuration.nix
         ./modules/dev/git-scripts.nix
-        ./modules/dev/ml4w.nix
+        ./modules/dev/helpers.nix
         ./modules/perf/balanced.nix
         ./modules/maint/update-log.nix
+        ./modules/ml4w/flatpaks.nix
       ];
     };
   };
