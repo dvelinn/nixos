@@ -155,6 +155,22 @@
   # ----------------------------------------------------------------------------
   services.flatpak.enable = true;
   services.mullvad-vpn.enable = true;
+  systemd.services.ananicy.serviceConfig.Delegate = true;
+
+  # Enable Ananicy with CachyOS ruleset
+  services.ananicy = {
+    enable = true;
+    package = pkgs.ananicy-cpp;
+    rulesProvider = pkgs.ananicy-rules-cachyos;  # CachyOS rules (packaged in Nixpkgs)
+  };
+
+  # Avoid priority conflicts with GameMode, enable if needed
+  #services.gamemode = {
+  #  enable = true;
+  #  settings = {
+  #    general = { renice = 0; };   # let Ananicy handle niceness
+  #  };
+  #};
 
   # ----------------------------------------------------------------------------
   # Basic maintenance
