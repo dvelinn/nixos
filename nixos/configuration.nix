@@ -32,7 +32,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   # boot.kernelPackages = pkgs.linuxPackages_latest;  # defualt nixos kernel
-  boot.loader.systemd-boot.configurationLimit = 5;
+  boot.loader.systemd-boot.configurationLimit = 7;
   programs.perfBalanced.enable = true;
   programs.perfBalanced.kernelFlavor = "zen";
 
@@ -206,11 +206,11 @@
     tieToAutoUpgrade = true;
   };
 
-  # Run garbage collection on a weekly basis to avoid filling up disk
+  # Run garbage collection on a weekly basis
   nix.gc = {
     automatic = true;
     dates = "weekly";
-    options = "--delete-older-than 30d";
+    options = "--delete-older-than 8d";
   };
 
   # ----------------------------------------------------------------------------
