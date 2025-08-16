@@ -180,36 +180,41 @@
   # ----------------------------------------------------------------------------
   # Basic maintenance
   # ----------------------------------------------------------------------------
+
+  #I'm not convinced doing auto updates is great. I'll stick to manual for now.
+  # Auto building doesn't seem to be working anyway. Leaving this
+  # block commented in case I want to revisit the idea.
+
   # Update lock file
-  services.lockfileUpdater = {
-    enable = true;
-    user = "polygon";
-    repoPath = "/home/polygon/.mydotfiles/nixos";
-    onCalendar = "*-*-* 02:50:00 America/New_York"; # tweak if you like
-  };
+  #services.lockfileUpdater = {
+  #  enable = true;
+  #  user = "polygon";
+  #  repoPath = "/home/polygon/.mydotfiles/nixos";
+  #  onCalendar = "*-*-* 02:50:00 America/New_York"; # tweak if you like
+  #};
 
   # Build system
-  system.autoUpgrade = {
-    enable = true;
-    flake = "/home/polygon/.mydotfiles/nixos#voidgazer";
-    allowReboot = false;
-    operation = "switch";
-    persistent = true;
-    dates = "*-*-* 03:00:00 America/New_York";
-  };
+  #system.autoUpgrade = {
+  #  enable = true;
+  #  flake = "/home/polygon/.mydotfiles/nixos#voidgazer";
+  #  allowReboot = false;
+  #  operation = "switch";
+  #  persistent = true;
+  #  dates = "*-*-* 03:00:00 America/New_York";
+  #};
 
   # Make sure the update log directory exists and is 0755
-  systemd.tmpfiles.rules = [
-    "d /var/log/nixos-updates 0755 root root -"
-  ];
+  #systemd.tmpfiles.rules = [
+  #  "d /var/log/nixos-updates 0755 root root -"
+  #];
 
   # Create a log of what was updated
-  programs.updateLog = {
-    enable = true;
-    script = "/home/polygon/.mydotfiles/scripts/auto-update/update-log.sh";
-    schedule = "*-*-* 03:10:00 America/New_York";
-    tieToAutoUpgrade = true;
-  };
+  #programs.updateLog = {
+  #  enable = true;
+  #  script = "/home/polygon/.mydotfiles/scripts/auto-update/update-log.sh";
+  #  schedule = "*-*-* 03:10:00 America/New_York";
+  #  tieToAutoUpgrade = true;
+  #};
 
   # Run garbage collection on a weekly basis
   nix.gc = {
