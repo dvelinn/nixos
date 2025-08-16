@@ -9,8 +9,10 @@
 
   # Bash aliases for QoL
   environment.shellAliases = {
-  update-flake = "nix flake update --flake ~/.mydotfiles/nixos";
-  rebuild  = "sudo nixos-rebuild switch --flake ~/.mydotfiles/nixos#voidgazer";
+    #update-flake = "nix flake update --flake ~/.mydotfiles/nixos";
+    # rebuild  = "sudo nixos-rebuild switch --flake ~/.mydotfiles/nixos#voidgazer";
+    rebuild = "nh os switch";
+    update-flake = "nh os switch --update";
   };
 
   # Install custom bash scripts
@@ -25,6 +27,10 @@
     };
   };
 
+  # Define flake for nh
+  environment.sessionVariables = {
+    NH_FLAKE= "/home/polygon/.mydotfiles/nixos";
+  };
 
   # ----------------------------------------------------------------------------
   # Boot & kernel
@@ -240,6 +246,9 @@
     libreoffice-fresh
     gnome-calculator
     plex-desktop
+    nh
+    nix-output-monitor
+    nvd
 
     # == ML4W DEPS ==
     wget unzip gum rsync git figlet xdg-user-dirs

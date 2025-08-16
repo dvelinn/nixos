@@ -34,4 +34,5 @@ else
   git commit -m "WIP"
 fi
 
-exec sudo nixos-rebuild switch --flake "$FLAKE_DIR#$HOST"
+# exec sudo nixos-rebuild switch --flake "$FLAKE_DIR#$HOST"
+exec nh os switch
