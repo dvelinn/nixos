@@ -75,9 +75,9 @@
     modesetting.enable = true;
     powerManagement.enable = false;
     powerManagement.finegrained = false;
-    open = false;                 # should be true, but currently doesn't build
+    open = true;                 # should be true, but currently doesn't build
     nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.latest;
+    package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
   # X11 display server + Gnome
